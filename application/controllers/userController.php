@@ -1,6 +1,12 @@
 <?php
 class UserController extends CI_Controller {
     
+    function UserController(){
+        parent::__construct();
+        $this->load->library('form_validation');
+        $this->load->model('userModel');
+    }
+    
     public function index()
     {
         $this->auth();
@@ -8,7 +14,6 @@ class UserController extends CI_Controller {
     
     public function signup(){
         $this->load->model('head');
-        $this->load->model('userModel');
         $this->load->view($this->config->item('template_dir') . 'head', $this->head->array);        
         if($this->session->userdata('email'))
         {
@@ -17,7 +22,6 @@ class UserController extends CI_Controller {
         }
         else
         {
-            $this->load->library('form_validation');
             $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|xss_clean|callback_email_exists');
             $this->form_validation->set_rules('password', '', 'trim|min_length[6]|max_legth[15]|required|matches[passconf]');
             $this->form_validation->set_rules('passconf', '', 'trim|required');            
@@ -50,13 +54,14 @@ class UserController extends CI_Controller {
         $this->load->view($this->config->item('template_dir') . 'foot', $this->head->array);        
     }
     
-    public function auth(){
-        $data = array(
-            'title' => $this->lang->line('auth_title'),
-            'copyright' => '&copy HiLife'
-        );
-        $this->load->model('userModel');
-        $this->load->view($this->config->item('template_dir') . 'head', $data);
+    public function auth($str = true){
+        if($str){
+            $data = array(
+                'title' => $this->lang->line('auth_title'),
+                'copyright' => '&copy HiLife'
+            );
+            $this->load->view($this->config->item('template_dir') . 'head', $data);
+        }
         if($this->userLogin())
         {
             $array["text"] = $this->lang->line('auth');
@@ -65,7 +70,6 @@ class UserController extends CI_Controller {
         }
         else
         {
-            $this->load->library('form_validation');
             $this->form_validation->set_rules('email', 'Email', 'trim|required|email_valid');
             $this->form_validation->set_rules('password', '', 'trim|required');
             
@@ -92,11 +96,11 @@ class UserController extends CI_Controller {
                 
             }
         }
-        $this->load->view($this->config->item('template_dir') . 'foot', $data);
+        if($str)
+            $this->load->view($this->config->item('template_dir') . 'foot', $data);
     }
     
     public function logout(){
-        $this->load->model('userModel');
         $this->userModel->logout();
     }
     
@@ -105,7 +109,6 @@ class UserController extends CI_Controller {
             'title' => $this->lang->line('request_admin_title'),
             'copyright' => '&copy HiLife'
         );
-        $this->load->library('form_validation');
         
         $this->load->view($this->config->item('template_dir') . 'head', $data);
         
@@ -124,16 +127,52 @@ class UserController extends CI_Controller {
                 'descr' => $this->input->post('descr'),
                 'phone' => $this->input->post('phone'),
                 'name' => $this->input->post('name'),
-                'email' => $this->input->post('email')
+                'email' => $this->input->post('email'),
+                'added' => date('Y-m-d H:i:s')
             );
             if( $this->db->insert('request_admin', $opts) ){
                 $array = array('text' => $this->lang->line('success_request'));
                 $this->load->view($this->config->item('template_dir') . 'success', $array);
-            }else
+            }else{
                 $array = array('text' => $this->lang->line('error_request'));
                 $this->load->view($this->config->item('template_dir') . 'div_error', $array);
+            }
         }
         
+        $this->load->view($this->config->item('template_dir') . 'foot', $data);
+    }
+    
+    public function request_in_postav(){
+        $data = array(
+            'title' => $this->lang->line('request_in_postav_title'),
+            'copyright' => '&copy;'
+        );
+        $this->load->view($this->config->item('template_dir') . 'head', $data);
+        
+        if( ! $this->userLogin() )
+            $this->auth(false);
+        else
+        {
+            $this->form_validation->set_rules('descr', '', 'trim');
+            $info = $this->userModel->userInfo();
+            
+            if( $this->form_validation->run() == FALSE )
+                $this->load->view('user/request_in_postav', $info[0]);
+            else
+            {
+                $this->load->helper('url');
+                $array = array(
+                    'added' => date('Y-m-d H:i:s'),
+                    'name' => $info[0]->username,
+                    'userid' => $info[0]->id,
+                    'in_postav' => 'yes'
+                );
+                if($this->input->post('descr'))
+                    $array['descr'] = $this->input->post('descr');
+                $this->db->insert('request_admin', $array);
+                redirect( $this->config->item('site_url') );
+            }
+        }
         $this->load->view($this->config->item('template_dir') . 'foot', $data);
     }
     

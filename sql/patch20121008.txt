@@ -1,0 +1,85 @@
+-- phpMyAdmin SQL Dump
+-- version 3.5.1
+-- http://www.phpmyadmin.net
+--
+-- Хост: localhost
+-- Время создания: Окт 08 2012 г., 18:02
+-- Версия сервера: 5.5.24-log
+-- Версия PHP: 5.4.3
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- База данных: `hilife`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `request_admin`
+--
+
+CREATE TABLE IF NOT EXISTS `request_admin` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата добавления',
+  `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
+  `subject` varchar(32) NOT NULL DEFAULT '' COMMENT 'Тема',
+  `descr` text NOT NULL COMMENT 'Класс пользователя',
+  `email` varchar(200) NOT NULL COMMENT 'Емайл',
+  `phone` varchar(12) NOT NULL COMMENT 'Номер телефона',
+  `in_postav` enum('yes','no') NOT NULL DEFAULT 'no',
+  `userid` int(10) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица запросов администрации' AUTO_INCREMENT=8 ;
+
+--
+-- Дамп данных таблицы `request_admin`
+--
+
+INSERT INTO `request_admin` (`id`, `added`, `name`, `subject`, `descr`, `email`, `phone`, `in_postav`, `userid`) VALUES
+(4, '0000-00-00 00:00:00', 'Марат Шайхетдинов', 'ololoшенька', 'Я хочу в поставщики, срочно!', '', '79274858601', 'no', 0),
+(3, '0000-00-00 00:00:00', 'Марат Шайхетдинов', 'ololoшенька', 'Я хочу в поставщики, срочно!', '', '79274858601', 'no', 0),
+(5, '2012-10-07 19:15:21', 'Марат Шайхетдинов', 'ololoшенька', 'Я хочу в поставщики, срочно!', '', '79274858601', 'no', 0),
+(6, '2012-10-08 17:58:53', 'Марат Шайхетдинов БРООJJJJ', '', 'OlOlO', '', '', 'yes', 4),
+(7, '2012-10-08 17:59:51', 'Марат Шайхетдинов БРООJJJJ', '', 'OlOlO', '', '', 'yes', 4);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `users`
+--
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата регистрации',
+  `username` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
+  `pass` varchar(32) NOT NULL DEFAULT '' COMMENT 'Хешированный пароль',
+  `type` enum('moderator','postav','client','admin') NOT NULL DEFAULT 'client' COMMENT 'Класс пользователя',
+  `email` varchar(200) NOT NULL,
+  `phone` varchar(12) NOT NULL,
+  `status` enum('active','banned','not_active') NOT NULL,
+  `ip` varchar(15) NOT NULL DEFAULT '0.0.0.0',
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица всех зарегистрированных' AUTO_INCREMENT=7 ;
+
+--
+-- Дамп данных таблицы `users`
+--
+
+INSERT INTO `users` (`id`, `added`, `username`, `pass`, `type`, `email`, `phone`, `status`, `ip`) VALUES
+(2, '2012-09-04 00:00:00', 'МАРАТ!', '123456', 'client', 'shaihetdinov2009@yandex.ru', '0', 'active', '0.0.0.0'),
+(3, '2012-09-20 00:00:00', 'dsdadas', '123', 'client', '', '0', 'active', '0.0.0.0'),
+(4, '2012-10-02 15:26:36', 'Марат Шайхетдинов БРООJJJJ', 'f93eca346455f5eb99e423272a8212f9', 'moderator', 'marat-shahutdino@mail.ru', '79274858601', 'banned', '0.0.0.0'),
+(5, '2012-10-03 15:54:22', 'Марат Шайхетдинов', 'f93eca346455f5eb99e423272a8212f9', 'client', 'marat-123@mail.ru', '79274858601', 'active', '0.0.0.0');
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

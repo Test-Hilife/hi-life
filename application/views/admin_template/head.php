@@ -5,3 +5,9 @@
     <title>Админка</title>
 </head>
 <body>
+    <div align="center">
+        <a href="index">Главная</a>
+        <a href="requests">Запросы посетителей</a>
+        <a href="tovars">Товары</a>
+        <a href="users">Пользователи</a>
+    </div>
