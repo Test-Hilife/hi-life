@@ -1,0 +1,68 @@
+CREATE TABLE IF NOT EXISTS `cats` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `cat_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Название категории',
+  `descr` text NOT NULL COMMENT 'Описание категории',
+  `parent_id` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица категорий' AUTO_INCREMENT=2 ;
+
+CREATE TABLE IF NOT EXISTS `postavs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата регистрации',
+  `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя компании',
+  `text` text NOT NULL COMMENT 'Описание компании',
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица поставщиков' AUTO_INCREMENT=1 ;
+
+CREATE TABLE IF NOT EXISTS `request_admin` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата добавления',
+  `name` varchar(100) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
+  `subject` varchar(32) NOT NULL DEFAULT '' COMMENT 'Тема',
+  `descr` text NOT NULL COMMENT 'Класс пользователя',
+  `email` varchar(200) NOT NULL COMMENT 'Емайл',
+  `phone` varchar(12) NOT NULL COMMENT 'Номер телефона',
+  `in_postav` enum('yes','no') NOT NULL DEFAULT 'no',
+  `userid` int(10) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица запросов администрации' AUTO_INCREMENT=8 ;
+
+CREATE TABLE IF NOT EXISTS `tovars` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата добавления',
+  `postav_id` int(10) NOT NULL COMMENT 'ID поставщика',
+  `name` varchar(200) NOT NULL DEFAULT '' COMMENT 'Название товара',
+  `small_text` varchar(250) NOT NULL,
+  `text` text NOT NULL,
+  `image1` varchar(200) NOT NULL,
+  `image2` varchar(200) NOT NULL,
+  `image3` varchar(200) NOT NULL,
+  `image4` varchar(200) NOT NULL,
+  `image5` varchar(200) NOT NULL,
+  `cena` int(10) NOT NULL,
+  `skidka` int(4) NOT NULL,
+  `condition` text NOT NULL,
+  `cena_review` int(4) NOT NULL DEFAULT '0',
+  `top` enum('yes','no') NOT NULL DEFAULT 'no',
+  `cats` varchar(250) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица товаров' AUTO_INCREMENT=2 ;
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата регистрации',
+  `username` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
+  `pass` varchar(32) NOT NULL DEFAULT '' COMMENT 'Хешированный пароль',
+  `type` int(2) NOT NULL DEFAULT '0' COMMENT 'Класс пользователя',
+  `email` varchar(200) NOT NULL,
+  `phone` varchar(15) NOT NULL,
+  `status` enum('active','banned','not_active') NOT NULL,
+  `ip` varchar(15) NOT NULL DEFAULT '0.0.0.0',
+  `postav_id` int(10) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`),
+  KEY `username` (`username`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица всех зарегистрированных' AUTO_INCREMENT=7 ;

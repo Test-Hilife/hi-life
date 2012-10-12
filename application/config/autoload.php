@@ -95,7 +95,7 @@ $autoload['config'] = array('config_site');
 |
 */
 
-$autoload['language'] = array('modules/user');
+$autoload['language'] = array('modules/user', 'site');
 
 
 /*
@@ -108,7 +108,7 @@ $autoload['language'] = array('modules/user');
 |
 */
 
-$autoload['model'] = array();
+$autoload['model'] = array('siteModel');
 
 
 /* End of file autoload.php */

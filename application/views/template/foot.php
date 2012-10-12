@@ -1,3 +1,3 @@
-    <div><?php echo $copyright;?></div>
+    <div><?php echo @$copyright;?></div>
 </body>
 </html>

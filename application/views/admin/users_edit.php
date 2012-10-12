@@ -19,9 +19,10 @@
 <?php echo form_error('class'); ?>
 <h5>Класс пользователя</h5>
 <select name="class">
-    <option value="client" <?=($result->type == 'client' ? 'selected':''); ?> >Клиент</option>
-    <option value="postav" <?=($result->type == 'postav' ? 'selected':''); ?> >Поставщик</option>
-    <option value="moderator" <?=($result->type == 'moderator' ? 'selected':''); ?> >Модератор</option>
+    <option value="0" <?=($result->type == 0 ? 'selected':''); ?> >Клиент</option>
+    <option value="1" <?=($result->type == 1 ? 'selected':''); ?> >Поставщик</option>
+    <option value="2" <?=($result->type == 2 ? 'selected':''); ?> >Модератор</option>
+    <option value="3" <?=($result->type == 3 ? 'selected':''); ?> >Администратор</option>
 </select>
 
 <?php echo form_error('class'); ?>

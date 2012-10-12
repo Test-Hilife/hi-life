@@ -60,18 +60,20 @@ class UserModel extends CI_Model{
         if( $this->session->userdata('email') != '' && $this->session->userdata('pass') != '')
         {
             $this->db->select('id')
-                        ->from('users')
                         ->where( array('email' => $this->session->userdata('email'), 'pass' => $this->session->userdata('pass')) )
                         ->limit('1');
+            $query = $this->db->get('users');
             $num = $this->db->count_all_results(); 
             if( $num )
+            {
                 return TRUE;
+            }
             else
                 return FALSE;
         }
         else
             return FALSE;
-    }    
+    }   
     
 }
 ?>

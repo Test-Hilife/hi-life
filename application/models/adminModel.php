@@ -14,12 +14,16 @@ class AdminModel extends CI_Model{
      * Список пользователей
      */
     public function p_users($id = 0){
-        if( (int) $id > 0 )
+        if( $id > 0 )
         {
             $this->db->where('id', $id)->limit(1);
             $query = $this->db->get('users');
-            $array['result'] = $query->result();
-            $array['result'] = $array['result'][0];
+            if($query->num_rows() > 0)
+            {
+                $array['result'] = $query->result();
+                $array['result'] = $array['result'][0];
+            }else
+                return false;
         }
         else
         {
@@ -75,10 +79,9 @@ class AdminModel extends CI_Model{
     private function admin_exists(){
         $this->db->select('id')
                     ->from('users')
-                    ->where( array('email' => $this->email, 'pass' => $this->password, 'type' => 'admin') )
+                    ->where( array('email' => $this->session->userdata['email'], 'pass' => $this->session->userdata['pass'], 'type' => 'admin') )
                     ->limit('1');
-        $num = $this->db->count_all_results(); 
-        return $num;
+        return $this->db->count_all_results();
     }
     
     public function adminExists(){

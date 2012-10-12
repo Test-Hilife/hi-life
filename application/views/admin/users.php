@@ -12,13 +12,13 @@
         <?php foreach($result AS $row): ?>
             <?php
                 switch ($row->type){
-                    case 'client':
+                    case 0:
                         $class = $this->lang->line('client');
                     break;
-                    case 'postav':
+                    case 1:
                         $class = $this->lang->line('postav');
                     break;
-                    case 'moderator':
+                    case 2:
                         $class = $this->lang->line('moderator');
                     break;
                     default:
