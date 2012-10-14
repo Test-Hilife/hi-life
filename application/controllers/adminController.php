@@ -2,7 +2,7 @@
 
 class AdminController extends CI_Controller{
     
-    function AdminController(){
+    function __construct(){
         parent::__construct();
         $this->load->model('adminModel');
         $this->lang->load('modules/admin', $this->config->item('default_language'));

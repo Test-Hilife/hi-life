@@ -4,13 +4,13 @@ class TovarModel extends CI_Model{
     
     public $tovar;
     
-    function TovarModel(){
+    function __construct(){
         parent::__construct();
         $this->load->model('userModel');
         $this->load->library('form_validation');
     }
     
-    public function exists_tovar($id){
+    public function exists_tovar($id = 0){
         if(!$id) return false;
         $this->db->where('id', $id);
         $query = $this->db->get('tovars');
@@ -21,8 +21,60 @@ class TovarModel extends CI_Model{
         }else{
             $this->tovar = 0;
             return FALSE;
+        }   
+    }
+    
+    public function new_order($tovar = 0, $basket = 'yes'){
+        if($this->siteModel->login)
+            $user = $this->siteModel->user->id;
+        else
+        {
+            $this->load->helper('string');
+            if( trim($this->session->userdata('user')) )
+                $user = $this->session->userdata('user');
+            else
+            {
+                $user = random_string('alnum', 16);
+                $this->session->set_userdata('user', $user);
+            }
         }
-            
+        
+        $query = $this->db->where(array('tovarid' => $tovar, 'user' => $user))
+                            ->get('orders');
+        if($query->num_rows() > 0 && $basket == 'yes')
+            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+        
+        if($basket == 'yes')
+            $this->db->insert('orders', array('user' => $user, 'tovarid' => $tovar, 'basket' => $basket));
+        elseif($basket = 'no')
+        {
+            if($query->num_rows() > 0)
+            {
+                $this->db->where(array('tovarid' => $tovar, 'user' => $user));
+                $this->db->update('orders', array('basket' => $basket));
+            }
+            else
+            {
+                $this->db->insert('orders', array('user' => $user, 'tovarid' => $tovar, 'basket' => 'no'));
+            }
+        }
+        
+        redirect($this->config->item('site_url') . 'tovar/payment/' . $tovar);
+    }
+    
+    public function del_order($tovar = 0){
+        if($this->siteModel->login)
+            $user = $this->siteModel->user->id;
+        elseif( trim($this->session->userdata('user')) )
+            $user = $this->session->userdata('user'); 
+        else
+            return FALSE;
+        
+        if( $this->db->delete('orders', array('user' => $user, 'tovar' => $tovar)) )
+            return TRUE;
+        else
+            return FALSE;
+        
     }
     
     public function add($add = true, $id = 0){
@@ -40,11 +92,11 @@ class TovarModel extends CI_Model{
                 'rules' => 'trim|required'
             ),
             array(
-                'field' => 'cena',
+                'field' => 'price',
                 'rules' => 'trim|integer|required'
             ),
             array(
-                'field' => 'skidka',
+                'field' => 'discount',
                 'rules' => 'trim|integer'
             ),
             array(
@@ -52,7 +104,7 @@ class TovarModel extends CI_Model{
                 'rules' => 'trim'
             ),
             array(
-                'field' => 'cena_review',
+                'field' => 'price_review',
                 'rules' => 'trim|integer'
             ),
             array(
@@ -82,10 +134,10 @@ class TovarModel extends CI_Model{
                 'name' => $this->input->post('name'),
                 'small_text' => $this->input->post('small_text'),
                 'text' => $this->input->post('text'),
-                'cena' => $this->input->post('cena'),
-                'skidka' => $this->input->post('skidka'),
+                'price' => $this->input->post('cena'),
+                'discount' => $this->input->post('skidka'),
                 'condition' => $this->input->post('condition'),
-                'cena_review' => $this->input->post('cena_review'),
+                'price_review' => $this->input->post('cena_review'),
                 'added' => date('Y-m-d H:i:s'),
                 'postav_name' => $this->userModel->userLogin('postav_name')
             );
@@ -115,5 +167,7 @@ class TovarModel extends CI_Model{
             }
         }
     }
+    
+
 }
 ?>

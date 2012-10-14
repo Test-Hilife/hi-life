@@ -2,7 +2,7 @@
 
 class UserModel extends CI_Model{
     
-    function UserModel(){
+    function __construct(){
         parent::__construct();
     }
     

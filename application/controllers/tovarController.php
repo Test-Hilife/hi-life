@@ -58,16 +58,12 @@ class TovarController extends CI_Controller{
     /*
      * Удаление товара
      */
-    public function delete($id){
-        $this->db->select('postav_id')
-                    ->where('id', $id);
-        $query = $this->db->get('tovars');
-        $row = $query->result();
-        
-        if(!$row)
-            die;
+    public function delete($id = 0){
+
         $this->siteModel->redirLogin();
-        
+        if( ! $this->tovarModel->tovar_exists($id) )
+            die;
+        $row = $this->tovarModel->tovar;
         if( $this->siteModel->user->postav_id == $row[0]->postav_id || $this->siteModel->user->type >= UC_POSTAV)
         {
             $this->db->delete('tovars', array('id' => $id));
@@ -113,9 +109,105 @@ class TovarController extends CI_Controller{
     }
     
     /*
-     * Редактирование категорий
+     * Удаление категории товара
      */
-    public function edit_cats($tovarId = 0){
+    public function del_cat($tovar = 0, $cat = 0){
+        if( ! $this->tovarModel->exists_tovar($tovar) || ! (int)$cat)
+            die;
+        $row = $this->tovarModel->tovar;
+        $array = explode(', ', $row[0]->cats);
+        if( ! in_array($cat, $array) )
+            die($this->lang->line('cat_not_exists'));
+        echo count($array);
+        if( count($array) != 1 ){
+            if($array[0] != $cat)
+                $cats = str_replace(', ' . $cat, '', $row[0]->cats);
+            else 
+                $cats = str_replace($cat . ', ', '', $row[0]->cats);
+        }else
+            $cats = '';
+        $this->db->where('id', $tovar);
+        $this->db->update('tovars', array('cats' => $cats));
+        //redirect($this->config->item('site_url'));
+    }
+    
+    public function add_review($tovar = 0){
+        
+        if( ! $this->tovarModel->exists_tovar($tovar) )
+            die;   
+        $this->siteModel->redirLogin();
+        $this->load->model('reviewModel');
+        if($this->reviewModel->add_review(array('type' => 'tovar')))
+            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+        else
+            die($this->lang->line('unknown_error'));
+        
+    }
+    
+    public function del_review($id = 0){
+        $this->load->model('reviewModel');
+        $this->reviewModel->review_info($id);
+        $this->siteModel->redirLogin();
+        if( ! $this->reviewModel->exists 
+                || $this->reviewModel->info[0]->user_id != $this->siteModel->user[0]->id 
+                && $this->siteModel->user[0]->type < UC_MODERATOR )
+            die;
+        $this->reviewMode->del_review($id);
+    }
+    
+    public function edit_review($id = 0){
+        $this->load->model('reviewModel');
+        $this->reviewModel->review_info($id);
+        $this->siteModel->redirLogin();
+        if( ! $this->reviewModel->exists 
+               || $this->reviewModel->info[0]->user_id != $this->siteModel->user[0]->id 
+               && $this->siteModel->user[0]->type < UC_MODERATOR )
+           die;  
+        if($this->reviewModel->add_review(array('type' => 'tovar', 'act' => 'edit', 'id' => $id)))
+            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+        else
+            die($this->lang->line('unknown_error'));
+    }
+    
+    /*
+     * Добавление в корзину
+     */
+    public function new_order($tovar = 0){
+        
+        if( !(int) $tovar )
+            die;
+        
+        $this->tovarModel->new_order($tovar, 'yes');
+        
+    }
+    
+    /*
+     * Открытие сделки
+     */
+    public function open_order($tovar = 0){
+        
+        if( !(int) $tovar )
+            die;
+        
+        $this->tovarModel->new_order($tovar, 'no');
+        
+    }
+    
+    /*
+     * Удаление сделки
+     */
+    public function del_order($tovar = 0){
+        
+        if( !(int) $tovar)
+            die;
+        
+        if( $this->tovarModel->del_order($tovar) )
+            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+        else
+        {
+            $array['text'] = $this->lang->line('error_del_order');
+            $this->load->view($this->config->item('template_dir') . 'div_error', $array);
+        }
         
     }
     

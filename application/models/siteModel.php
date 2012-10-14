@@ -5,7 +5,7 @@ class SiteModel extends CI_Model{
     public $login = false;
     public $user;
     
-    function SiteModel(){
+    function __construct(){
         parent::__construct();
         if( $this->session->userdata('pass') )
         {
@@ -14,9 +14,9 @@ class SiteModel extends CI_Model{
             $query = $this->db->get('users');
             if($query->num_rows())
             {
-            $row = $query->result();
-            $this->user = $row[0];
-            $this->login = true;
+                $row = $query->result();
+                $this->user = $row[0];
+                $this->login = true;
             }
         }
     }
