@@ -154,10 +154,12 @@ class UserController extends CI_Controller {
         else
         {
             $this->form_validation->set_rules('descr', '', 'trim');
+            $this->form_validation->set_rules('name', '', 'trim|required');
+            
             $info = $this->siteModel->user;
             
             if( $this->form_validation->run() == FALSE )
-                $this->load->view('user/request_in_postav', $info[0]);
+                $this->load->view('user/request_in_postav', $info);
             else
             {
                 $this->load->helper('url');
@@ -165,7 +167,8 @@ class UserController extends CI_Controller {
                     'added' => date('Y-m-d H:i:s'),
                     'name' => $info->username,
                     'userid' => $info->id,
-                    'in_postav' => 'yes'
+                    'in_postav' => 'yes',
+                    'subject' => $this->input->post('name')
                 );
                 if($this->input->post('descr'))
                     $array['descr'] = $this->input->post('descr');

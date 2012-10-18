@@ -3,6 +3,9 @@
 //Название сайта
 $config['site_name'] = 'HiLife';
 
+//Email сайта
+$config['site_email'] = 'info@info.com';
+
 //Разделитель между названием сайта и названием страницы
 $config['site_defis'] = '-';
 

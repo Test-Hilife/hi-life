@@ -10,13 +10,85 @@ class AdminController extends CI_Controller{
     }
     
     private function head(){
-        $this->load->model('adminModel');
-        
         $this->load->view($this->config->item('admin_template_dir') . 'head');
     }
     
     private function foot(){
         $this->load->view($this->config->item('admin_template_dir') . 'foot');
+    }
+    
+    /*
+     * Функция для просмотра страниц только определенным классам администрации
+     */
+    private function errorTypeUser($type = 0){
+        if( $this->siteModel->user->type < $type )
+            redirect( $this->config->item('site_url') . 'admin/index' );
+    }
+    
+    /*
+     * Отправка Email сообщения
+     */
+    public function send_email($userid = 0){
+        $this->errorTypeUser(UC_MODERATOR);
+        $this->head();
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('subject', '', 'trim|required');
+        $this->form_validation->set_rules('descr', '', 'trim|required');
+        $this->form_validation->set_rules('email', '', 'trim|required|valid_email');
+        if( $this->form_validation->run() == FALSE )
+            $this->load->view('send_email');
+        else
+        {
+            $this->load->library('email');
+            $this->email->from($this->config->item('site_email'), $this->config->item('site_name'));
+            $this->email->to($this->input->post('email'));
+            $this->email->subject($this->input->post('subject'));
+            $this->email->message($this->input->post('descr'));
+            if( $this->email->send() )
+                redirect($this->config->item('site_url') . 'admin/');
+            else
+                $this->load->view($this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('error_send_email')));
+        }
+        $this->foot();
+    }
+    
+    /*
+     * Просмотр товаров
+     */
+    public function tovars($act = 'all'){
+        $this->head();
+        if( $act == 'all' )
+        {
+            $this->db->order_by('added', 'DESC');   
+        }
+        elseif( $act == 'new' )
+        {
+            $this->db->where('moderated', 'no');
+            $this->db->order_by('added', 'desc');
+        }
+        $query = $this->db->get('tovars');
+        $row = $query->result();
+        $this->load->view('admin/tovars', $row);
+        $this->foot();
+    }
+    
+    /*
+     * Утверждение купона
+     */
+    public function tovar_moderated($tovar = 0, $act = 'yes'){
+        $this->errorTypeUser(UC_MODERATOR);
+        if ($act != 'yes' && $act != 'no' && (int) $tovar < 1)
+            die;
+        $this->load->model('tovarModel');
+        if( $this->tovar_exists($tovar) )
+        {
+            $this->db->where('id', $tovar);
+            $this->db->update('tovars', array('moderated', $act));
+        }
+        else
+        {
+            $this->load->view($this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('not_id')));
+        }
     }
     
     public function index(){
@@ -33,6 +105,7 @@ class AdminController extends CI_Controller{
      * Список пользователей
      */
     public function users(){
+        $this->errorTypeUser(UC_MODERATOR);
         $this->head();
      
         $this->load->view( 'admin/users' , $this->adminModel->p_users());
@@ -44,26 +117,13 @@ class AdminController extends CI_Controller{
      * Редактирвание пользователя
      */
     public function user_edit($id = 0){
-        
+        $this->errorTypeUser(UC_MODERATOR);
         $this->head();
         
         $user = $this->adminModel->p_users($id);
         if( $id > 0 && $user > 0 )
         {
-            $this->load->library('form_validation');
-            $this->form_validation->set_rules('name', '', 'required|trim|xss_clean|max_length[100]');
-            $this->form_validation->set_rules('email', '', 'required|trim|email_valid');
-            $this->form_validation->set_rules('phone', '', 'trim|integer');
-            $this->form_validation->set_rules('class', '', 'trim|required');
-            $this->form_validation->set_rules('status', '', 'trim|required');
-            $this->form_validation->set_rules('password', '', 'trim');
-
-            if( $this->form_validation->run() == FALSE)
-                $this->load->view( 'admin/users_edit' , $user );
-            else
-            {
-                $this->adminModel->p_users_edit($id);
-            }
+                $this->adminModel->p_users_edit($id, $user);
         }
         else
             $this->load->view( $this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('not_id')) );
@@ -75,6 +135,7 @@ class AdminController extends CI_Controller{
      * Просмотр категорий
      */
     public function cats(){
+        $this->errorTypeUser(UC_MODERATOR);
         $this->head();
         
         $query = $this->db->order_by('id', 'desc')->get('cats');
@@ -94,6 +155,7 @@ class AdminController extends CI_Controller{
     public function del_cat($id = 0){
         if( !$id )
             die;
+        $this->errorTypeUser(UC_MODERATOR);
         $this->db->delete('cats', array('id' => $id));
     }
     
@@ -101,6 +163,7 @@ class AdminController extends CI_Controller{
      * Добавление категорий
      */
     public function add_cat(){
+        $this->errorTypeUser(UC_MODERATOR);
         $this->head();
         
         $this->load->library('form_validation');
@@ -134,6 +197,7 @@ class AdminController extends CI_Controller{
      * Различные вопросы администрации от пользователей
      */
     public function requests($act = '', $id = 0){
+        $this->errorTypeUser(UC_MODERATOR);
         $this->head();
         
         switch($act){
@@ -159,13 +223,36 @@ class AdminController extends CI_Controller{
                 else
                 {
                     $array = $this->adminModel->p_requests($id);
-                    if($array['result']->name){
+                    if($array['result']->name)
+                    {
                         $this->load->view( 'admin/requests_view', $array );
-                    }else{
-                        $view = $this->config->item('template_dir') . 'div_error';
+                    }
+                    else
+                    {
                         $this->load->view($this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('not_request')));
                     }
                 }
+            break;
+            
+            /*
+             * Принятие заявки в поставщики
+             */
+            case 'in_postav':
+                if( !(int) $id )
+                    die;
+                $this->db->where('id', $id);
+                $query = $this->db->get('request_admin');
+                $row = $query->result();
+                if( !$query->num_rows() || $row[0]->in_postav == 'no' )
+                    die;
+                $array = array(
+                    'name' => $row[0]->subject,
+                    'text' => $row[0]->descr
+                );
+                $this->db->insert('postavs', $array);
+                $this->db->where('id', $row[0]->userid);
+                $this->db->update('users', array('postav_id' => $this->db->insert_id()));
+                redirect( $this->config->item('site_url') . 'admin/requests');
             break;
             
             /*

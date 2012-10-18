@@ -141,6 +141,10 @@ class TovarModel extends CI_Model{
                 'added' => date('Y-m-d H:i:s'),
                 'postav_name' => $this->userModel->userLogin('postav_name')
             );
+            /* Если редакирует - отправляем на обработку модератору.*/
+            if( $add == FALSE )
+                $array['moderated'] = 'no';
+            
             $config_image = array(
                 'upload_path' => './uploads/images/tovar/',
                 'allowed_types' => 'gif|jpg|png',

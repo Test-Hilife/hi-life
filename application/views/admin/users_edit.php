@@ -25,8 +25,19 @@
     <option value="3" <?=($result->type == 3 ? 'selected':''); ?> >Администратор</option>
 </select>
 
-<?php echo form_error('class'); ?>
-<h5>Класс пользователя</h5>
+<?php echo form_error('date_unban'); ?>
+<h5>Забанить пользователя на</h5>
+<select name="date_unban">
+    <option value="0">Выберите</option>
+    <option value="1">1 день</option>
+    <option value="3">3 дня</option>
+    <option value="7">7 дней</option>
+    <option value="14">14 дней</option>
+    <option value="30">30 дней</option>
+</select>
+
+<?php echo form_error('status'); ?>
+<h5>Статус пользователя</h5>
 <select name="status">
     <option value="active" <?=($result->status == 'active' ? 'selected':''); ?> >Активен</option>
     <option value="banned" <?=($result->status == 'banned' ? 'selected':''); ?> >Забанить</option>

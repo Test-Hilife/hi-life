@@ -131,6 +131,9 @@ class TovarController extends CI_Controller{
         //redirect($this->config->item('site_url'));
     }
     
+    /*
+     * Добавление отзыва
+     */
     public function add_review($tovar = 0){
         
         if( ! $this->tovarModel->exists_tovar($tovar) )
@@ -144,24 +147,30 @@ class TovarController extends CI_Controller{
         
     }
     
+    /*
+     * Удаление отзыва
+     */
     public function del_review($id = 0){
         $this->load->model('reviewModel');
         $this->reviewModel->review_info($id);
         $this->siteModel->redirLogin();
         if( ! $this->reviewModel->exists 
-                || $this->reviewModel->info[0]->user_id != $this->siteModel->user[0]->id 
-                && $this->siteModel->user[0]->type < UC_MODERATOR )
+                || $this->reviewModel->info[0]->user_id != $this->siteModel->user->id 
+                && $this->siteModel->user->type < UC_MODERATOR )
             die;
         $this->reviewMode->del_review($id);
     }
     
+    /*
+     * Редактирование отзыва
+     */
     public function edit_review($id = 0){
         $this->load->model('reviewModel');
         $this->reviewModel->review_info($id);
         $this->siteModel->redirLogin();
         if( ! $this->reviewModel->exists 
-               || $this->reviewModel->info[0]->user_id != $this->siteModel->user[0]->id 
-               && $this->siteModel->user[0]->type < UC_MODERATOR )
+               || $this->reviewModel->info[0]->user_id != $this->siteModel->user->id 
+               && $this->siteModel->user->type < UC_MODERATOR )
            die;  
         if($this->reviewModel->add_review(array('type' => 'tovar', 'act' => 'edit', 'id' => $id)))
             redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
@@ -209,6 +218,36 @@ class TovarController extends CI_Controller{
             $this->load->view($this->config->item('template_dir') . 'div_error', $array);
         }
         
+    }
+    
+    /*
+     * Просмотр статистики товара поставщиком
+     */
+    public function stat($tovar = 0){
+        
+        if( !(int) $tovar )
+            die;
+        
+        $this->siteModel->redirLogin();
+        
+        if( ! $this->tovarModel->exists_tovar($tovar) || $this->tovarModel->tovar[0]->postav_id != $this->siteModel->user->postav_id )
+            die;
+        
+        $this->load->view( $this->config->item('template_dir') . 'head');
+        
+        /*Отывы*/
+        $this->db->where('tovar_id', $tovar);
+        $query = $this->db->get('reviews');
+        $rowReviews = $query->result();
+        
+        /*Сделки*/
+        $this->db->where(array('tovarid' => $tovar, 'payment' => 'yes'));
+        $query = $this->db->get('orders');
+        $ordersNum = $query->num_rows();
+        
+        $this->load->view('tovar/stat', array($rowReviews, $ordersNum));
+        
+        $this->load->view( $this->config->item('template_dir') . 'foot');
     }
     
 }
