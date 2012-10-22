@@ -1,7 +1,3 @@
---
--- Структура таблицы `cats`
---
-
 CREATE TABLE IF NOT EXISTS `cats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `cat_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Название категории',
@@ -11,11 +7,15 @@ CREATE TABLE IF NOT EXISTS `cats` (
   KEY `id` (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица категорий';
 
--- --------------------------------------------------------
-
---
--- Структура таблицы `orders`
---
+CREATE TABLE IF NOT EXISTS `logs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` datetime NOT NULL,
+  `class` varchar(50) NOT NULL,
+  `method` varchar(50) NOT NULL,
+  `text` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица логов сайта';
 
 CREATE TABLE IF NOT EXISTS `orders` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -23,16 +23,10 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `payment` enum('yes','no') NOT NULL DEFAULT 'no',
   `basket` enum('yes','no') NOT NULL DEFAULT 'yes',
-  `user` varchar(100) NOT NULL DEFAULT '' COMMENT 'идентификатор пользователя',
+  `user` varchar(16) NOT NULL DEFAULT '' COMMENT 'идентификатор пользователя',
   PRIMARY KEY (`id`),
   KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица заказов';
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `payments`
---
 
 CREATE TABLE IF NOT EXISTS `payments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -43,31 +37,10 @@ CREATE TABLE IF NOT EXISTS `payments` (
   KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица оплат заказов';
 
--- --------------------------------------------------------
-
---
--- Структура таблицы `postavs`
---
-
-CREATE TABLE IF NOT EXISTS `postavs` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата регистрации',
-  `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя компании',
-  `text` text NOT NULL COMMENT 'Описание компании',
-  PRIMARY KEY (`id`),
-  KEY `id` (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица поставщиков';
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `request_admin`
---
-
 CREATE TABLE IF NOT EXISTS `request_admin` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата добавления',
-  `in_postav` enum('yes','no') NOT NULL DEFAULT 'no',
+  `in_supplier` enum('yes','no') NOT NULL DEFAULT 'no',
   `userid` int(10) NOT NULL,
   `name` varchar(100) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
   `subject` varchar(32) NOT NULL DEFAULT '' COMMENT 'Тема',
@@ -76,12 +49,6 @@ CREATE TABLE IF NOT EXISTS `request_admin` (
   `phone` varchar(12) NOT NULL COMMENT 'Номер телефона',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица запросов администрации';
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `reviews`
---
 
 CREATE TABLE IF NOT EXISTS `reviews` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -95,11 +62,14 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица отзывов';
 
--- --------------------------------------------------------
-
---
--- Структура таблицы `tovars`
---
+CREATE TABLE IF NOT EXISTS `suppliers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата регистрации',
+  `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя компании',
+  `text` text NOT NULL COMMENT 'Описание компании',
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица поставщиков';
 
 CREATE TABLE IF NOT EXISTS `tovars` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -107,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `tovars` (
   `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата добавления',
   `price` int(10) NOT NULL,
   `discount` int(4) NOT NULL,
-  `postav_id` int(10) NOT NULL COMMENT 'ID поставщика',
+  `supplier_id` int(10) NOT NULL COMMENT 'ID поставщика',
   `price_review` int(4) NOT NULL DEFAULT '0',
   `top` enum('yes','no') NOT NULL DEFAULT 'no',
   `name` varchar(200) NOT NULL DEFAULT '' COMMENT 'Название товара',
@@ -124,26 +94,21 @@ CREATE TABLE IF NOT EXISTS `tovars` (
   KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица товаров';
 
--- --------------------------------------------------------
-
---
--- Структура таблицы `users`
---
-
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `postav_id` int(10) NOT NULL,
+  `supplier_id` int(10) NOT NULL,
   `balance` int(10) NOT NULL DEFAULT '0',
   `type` int(2) NOT NULL DEFAULT '0' COMMENT 'Класс пользователя',
-  `status` enum('active','banned','not_active') NOT NULL,
-  `added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Дата регистрации',
+  `status` enum('active','banned','not_active') NOT NULL DEFAULT 'not_active',
+  `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Дата регистрации',
   `date_unban` date NOT NULL DEFAULT '0000-00-00' COMMENT 'Дата разбана',
   `username` varchar(255) NOT NULL DEFAULT '' COMMENT 'Имя пользователья',
   `pass` varchar(32) NOT NULL DEFAULT '' COMMENT 'Хешированный пароль',
   `email` varchar(200) NOT NULL,
   `phone` varchar(15) NOT NULL,
   `ip` varchar(15) NOT NULL DEFAULT '0.0.0.0',
+  `hash` varchar(32) NOT NULL DEFAULT '' COMMENT 'Код для подтверждения пользователя',
   PRIMARY KEY (`id`),
   KEY `id` (`id`),
   KEY `username` (`username`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Таблица всех зарегистрированных';
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Таблица всех зарегистрированных';

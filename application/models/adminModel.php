@@ -64,6 +64,7 @@ class AdminModel extends CI_Model{
                 $array['date_unban'] = ( date('Y-m-d') + $this->input->post('date_unban') * 3600 * 24);
             $this->db->where('id', $id);
             $this->db->update('users', $array);
+            $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('edit_user_log') . $id );
             redirect( $this->config->item('site_url') . 'admin/users');
         }
     }
@@ -98,7 +99,8 @@ class AdminModel extends CI_Model{
     private function admin_exists(){
         $this->db->select('id')
                     ->from('users')
-                    ->where( array('email' => $this->session->userdata['email'], 'pass' => $this->session->userdata['pass'], 'type' => 'admin') )
+                    ->where( array('email' => $this->email, 'pass' => $this->password ) )
+                    ->where('type >', UC_SUPPLIER)
                     ->limit('1');
         return $this->db->count_all_results();
     }
@@ -119,7 +121,9 @@ class AdminModel extends CI_Model{
         if( $this->email != '' && $this->password != '' )
             $num = $this->admin_exists();
         else
-            $num = 1;
+            $num = 0;
+        
+        echo $num;
         
         if($num)
             return TRUE;
@@ -131,14 +135,12 @@ class AdminModel extends CI_Model{
         $this->session->set_userdata('admin_email', $this->email);
         $this->session->set_userdata('admin_passhash', $this->password);
         
-        $this->load->helper('url');
         redirect( $this->config->item('site_url') . 'admin/index');
     }
     
     public function logout(){
         $this->session->set_userdata( array('admin_email' => '', 'admin_passhash' => '') );
         
-        $this->load->helper('url');
         redirect( $this->config->item('site_url') . 'admin/index');
     }
     

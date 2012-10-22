@@ -45,8 +45,10 @@ class AdminController extends CI_Controller{
             $this->email->subject($this->input->post('subject'));
             $this->email->message($this->input->post('descr'));
             if( $this->email->send() )
+            {
+                $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('send_email_log') . $this->input->post('email') );
                 redirect($this->config->item('site_url') . 'admin/');
-            else
+            }else
                 $this->load->view($this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('error_send_email')));
         }
         $this->foot();
@@ -84,6 +86,7 @@ class AdminController extends CI_Controller{
         {
             $this->db->where('id', $tovar);
             $this->db->update('tovars', array('moderated', $act));
+            $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_moderated_log') .$tovar );
         }
         else
         {
@@ -187,6 +190,8 @@ class AdminController extends CI_Controller{
             if($this->input->post('parent_cat') != 0)
                 $array['parent_cat'] = $this->input->post('parent_cat');
             $this->db->insert('cats', $array);
+            $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('add_cat_log') . $array['cat_name'] );
+
             redirect($this->config->item('site_url') . 'admin/cats');
         }
         
@@ -237,21 +242,22 @@ class AdminController extends CI_Controller{
             /*
              * Принятие заявки в поставщики
              */
-            case 'in_postav':
+            case 'in_supplier':
                 if( !(int) $id )
                     die;
                 $this->db->where('id', $id);
                 $query = $this->db->get('request_admin');
                 $row = $query->result();
-                if( !$query->num_rows() || $row[0]->in_postav == 'no' )
+                if( !$query->num_rows() || $row[0]->in_supplier == 'no' )
                     die;
                 $array = array(
                     'name' => $row[0]->subject,
                     'text' => $row[0]->descr
                 );
-                $this->db->insert('postavs', $array);
+                $this->db->insert('suppliers', $array);
                 $this->db->where('id', $row[0]->userid);
-                $this->db->update('users', array('postav_id' => $this->db->insert_id()));
+                $this->db->update('users', array('supploer_id' => $this->db->insert_id()));
+                $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('supplier_add_log') . $this->db->insert_id() );
                 redirect( $this->config->item('site_url') . 'admin/requests');
             break;
             
@@ -272,7 +278,7 @@ class AdminController extends CI_Controller{
      * Главная страница
      */
     private function index_page(){
-        echo 'sss';
+        //$this->loginIn();
     }
     
     private function loginIn(){

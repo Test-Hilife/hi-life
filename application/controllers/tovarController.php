@@ -11,10 +11,17 @@ class TovarController extends CI_Controller{
     }
     
     /*
+     * Поиск товара
+     */
+    public function search($text = ''){
+        
+    }
+    
+    /*
      * Добавление товара
      */
     public function add(){
-        if( $this->siteModel->user->type < UC_POSTAV )
+        if( $this->siteModel->user->type < UC_SUPPLIER )
             die;
         $this->load->view( $this->config->item('template_dir') . 'head');
         
@@ -31,7 +38,7 @@ class TovarController extends CI_Controller{
      * Отличий от добавления нет, только в формы вставляем данные из базы
      */
     public function edit($id = 0){
-        if( $this->siteModel->user->type < UC_POSTAV || ! (int) $id )
+        if( $this->siteModel->user->type < UC_SUPPLIER || ! (int) $id )
             die;
         $this->load->view( $this->config->item('template_dir') . 'head');
         
@@ -64,9 +71,10 @@ class TovarController extends CI_Controller{
         if( ! $this->tovarModel->tovar_exists($id) )
             die;
         $row = $this->tovarModel->tovar;
-        if( $this->siteModel->user->postav_id == $row[0]->postav_id || $this->siteModel->user->type >= UC_POSTAV)
+        if( $this->siteModel->user->supplier_id == $row[0]->supplier_id || $this->siteModel->user->type >= UC_SUPPLIER)
         {
             $this->db->delete('tovars', array('id' => $id));
+            $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_delete_log') . $id );
             redirect($this->config->item('site_url') . 'tovar/');
         }
         else
@@ -81,6 +89,7 @@ class TovarController extends CI_Controller{
             die;
         $this->db->where('id', $id);
         $this->db->update('tovars', array('top' => $act));
+        $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_top_log') . $id );
         redirect($this->config->item('site_url') . 'admin/');
     }
     
@@ -230,7 +239,7 @@ class TovarController extends CI_Controller{
         
         $this->siteModel->redirLogin();
         
-        if( ! $this->tovarModel->exists_tovar($tovar) || $this->tovarModel->tovar[0]->postav_id != $this->siteModel->user->postav_id )
+        if( ! $this->tovarModel->exists_tovar($tovar) || $this->tovarModel->tovar[0]->supplier_id != $this->siteModel->user->supplier_id )
             die;
         
         $this->load->view( $this->config->item('template_dir') . 'head');

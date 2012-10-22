@@ -5,6 +5,7 @@ class UserController extends CI_Controller {
         parent::__construct();
         $this->load->library('form_validation');
         $this->load->model('userModel');
+        $this->lang->load('user', $this->config->item('default_language'));
     }
     
     public function index()
@@ -22,7 +23,7 @@ class UserController extends CI_Controller {
         }
         else
         {
-            $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|xss_clean|callback_email_exists');
+            $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|xss_clean');
             $this->form_validation->set_rules('password', '', 'trim|min_length[6]|max_legth[15]|required|matches[passconf]');
             $this->form_validation->set_rules('passconf', '', 'trim|required');            
             $this->form_validation->set_rules('name', '', 'trim|required|xss_clean');            
@@ -32,26 +33,69 @@ class UserController extends CI_Controller {
                 $this->load->view('user/signup');
             else
             {
-                $array = array(
-                    'email' => $this->input->post('email'),
-                    'pass'  => md5_hash( $this->input->post('password') ),
-                    'username'  => $this->input->post('name'),
-                    'phone' => $this->input->post('phone'),
-                    'added' => date('Y-m-d H:i:s'),
-                );
-                $this->db->insert('users', $array);
-
-                $data = array(
-                    'email' => $array['email'],
-                    'pass' => $array['pass'],
-                    'last_vizit' => $array['added']
+                if( !$this->email_exists($this->input->post('email')) )
+                {
+                    $this->load->view($this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('email_exists')) );
+                }
+                else
+                {
+                    $hash_code = random_string('alnum', 32);
+                    $array = array(
+                        'email' => $this->input->post('email'),
+                        'pass'  => md5_hash( $this->input->post('password') ),
+                        'username'  => $this->input->post('name'),
+                        'phone' => $this->input->post('phone'),
+                        'hash' => $hash_code
                     );
-                $this->session->set_userdata($data);
+                    $this->db->insert('users', $array);
+                    $this->siteModel->log_write($this->lang->line('signup_new_user') . $array['username']);
+                    
+                    $this->load->helper('string');
+                    $array_signup = array(
+                        'name' => $array['username'],
+                        'hash' => $hash_code
+                    );
+                    
+                    $this->load->library('email');
+                    $this->email->from($this->config->item('site_email'), $this->config->item('site_name'));
+                    $this->email->to($this->input->post('email'));
+                    $this->email->subject($this->lang->line('signup_in_site') . $this->config->item('site_name'));
+                    $this->email->message( $this->load->view('user/signup_ok', $array_signup) );
+                    if( $this->email->send() )
+                    {
+                        $this->load->view( $this->config->item('template_dir') . 'success', array('text' => $this->lang->line('signup_ok_in_email')) );
+                    }
+                    else
+                    {
+                        $this->load->view( $this->config->item('template_dir') . 'div_error', array('text' => $this->lang->line('signup_error_in_email')) );                       
+                    }
+                    /*
+                    $data = array(
+                        'email' => $array['email'],
+                        'pass' => $array['pass'],
+                        'last_vizit' => date('Y-m-d H:i:s')
+                        );
+                    $this->session->set_userdata($data);
+                     */
+                    
+                }
             }
             
         }
         
         $this->load->view($this->config->item('template_dir') . 'foot', $this->head->array);        
+    }
+    
+    public function confirm($hash = ''){
+        if( !trim($hash) )
+            die;
+        $this->db->where('hash', $hash);
+        $query = $this->db->get('users');
+        if( ! $query->num_rows() )
+            die;
+        $this->db->where('hash', $hash);
+        $this->db->update('users', array('status' => 'active'));
+        redirect( $this->config->item('site_url') );
     }
     
     public function auth($str = true){
@@ -62,7 +106,7 @@ class UserController extends CI_Controller {
             );
             $this->load->view($this->config->item('template_dir') . 'head', $data);
         }
-        if($this->userLogin())
+        if($this->userModel->login)
         {
             $array["text"] = $this->lang->line('auth');
             $this->load->view($this->config->item('template_dir') . 'div_error', $array);
@@ -142,17 +186,14 @@ class UserController extends CI_Controller {
         $this->load->view($this->config->item('template_dir') . 'foot', $data);
     }
     
-    public function request_in_postav(){
+    public function request_in_supplier(){
         $data = array(
             'title' => $this->lang->line('request_in_postav_title'),
             'copyright' => '&copy;'
         );
         $this->load->view($this->config->item('template_dir') . 'head', $data);
         
-        if( ! $this->userLogin() )
-            $this->auth(false);
-        else
-        {
+        $this->siteModel->redirLogin();
             $this->form_validation->set_rules('descr', '', 'trim');
             $this->form_validation->set_rules('name', '', 'trim|required');
             
@@ -167,7 +208,7 @@ class UserController extends CI_Controller {
                     'added' => date('Y-m-d H:i:s'),
                     'name' => $info->username,
                     'userid' => $info->id,
-                    'in_postav' => 'yes',
+                    'in_supplier' => 'yes',
                     'subject' => $this->input->post('name')
                 );
                 if($this->input->post('descr'))
@@ -175,7 +216,7 @@ class UserController extends CI_Controller {
                 $this->db->insert('request_admin', $array);
                 redirect( $this->config->item('site_url') );
             }
-        }
+            
         $this->load->view($this->config->item('template_dir') . 'foot', $data);
     }
     
@@ -183,7 +224,7 @@ class UserController extends CI_Controller {
         return $this->userModel->userLogin();
     }
     
-    public function email_exists($email){
+    private function email_exists($email){
         return $this->userModel->email_exists($email);
     }
 }

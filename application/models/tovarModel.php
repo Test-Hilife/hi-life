@@ -8,6 +8,7 @@ class TovarModel extends CI_Model{
         parent::__construct();
         $this->load->model('userModel');
         $this->load->library('form_validation');
+        $this->lang->load('modules/tovar', $this->config->item('default_language'));
     }
     
     public function exists_tovar($id = 0){
@@ -59,6 +60,22 @@ class TovarModel extends CI_Model{
             }
         }
         
+        /*
+         * Отправляем сообщение на почту
+         */
+        if( $this->siteModel->login )
+        {
+            $this->load->library('email');
+            $this->email->from($this->config->item('site_email'), $this->config->item('site_name'));
+            $this->email->to($this->siteModel->user->email);
+            $this->email->subject($this->lang->line('new_order') . $this->config->item('site_name'));
+            $array_order = array(
+                'name' => $this->siteModel->user->username,
+                'order_id' => $this->db->insert_id()
+            );
+            $this->email->message( $this->load->view('tovar/send_email_new_order', $array_order) );
+            $this->email->send();       
+        }
         redirect($this->config->item('site_url') . 'tovar/payment/' . $tovar);
     }
     
@@ -78,6 +95,9 @@ class TovarModel extends CI_Model{
     }
     
     public function add($add = true, $id = 0){
+        
+        $this->siteModel->errorTypeUser(UC_SUPPLIER);
+        
         $config = array(
             array(
                 'field' => 'name',
@@ -139,7 +159,7 @@ class TovarModel extends CI_Model{
                 'condition' => $this->input->post('condition'),
                 'price_review' => $this->input->post('cena_review'),
                 'added' => date('Y-m-d H:i:s'),
-                'postav_name' => $this->userModel->userLogin('postav_name')
+                'supplier_id' => $this->siteModel->user->supplier_id
             );
             /* Если редакирует - отправляем на обработку модератору.*/
             if( $add == FALSE )
