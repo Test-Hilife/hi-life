@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
     <title><?php
             echo $this->config->item('site_name') . 
-            ($title != '' ? $this->config->item('site_defis') . $title : ''); 
+            (@$title != '' ? $this->config->item('site_defis') . $title : ''); 
             ?>
     </title>
 </head>

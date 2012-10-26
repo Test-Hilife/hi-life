@@ -57,7 +57,7 @@ class AdminController extends CI_Controller{
     /*
      * Просмотр товаров
      */
-    public function tovars($act = 'all'){
+    public function products($act = 'all'){
         $this->head();
         if( $act == 'all' )
         {
@@ -68,16 +68,16 @@ class AdminController extends CI_Controller{
             $this->db->where('moderated', 'no');
             $this->db->order_by('added', 'desc');
         }
-        $query = $this->db->get('tovars');
+        $query = $this->db->get('products');
         $row = $query->result();
-        $this->load->view('admin/tovars', $row);
+        $this->load->view('admin/products', $row);
         $this->foot();
     }
     
     /*
      * Утверждение купона
      */
-    public function tovar_moderated($tovar = 0, $act = 'yes'){
+    public function product_moderated($tovar = 0, $act = 'yes'){
         $this->errorTypeUser(UC_MODERATOR);
         if ($act != 'yes' && $act != 'no' && (int) $tovar < 1)
             die;
@@ -85,7 +85,7 @@ class AdminController extends CI_Controller{
         if( $this->tovar_exists($tovar) )
         {
             $this->db->where('id', $tovar);
-            $this->db->update('tovars', array('moderated', $act));
+            $this->db->update('products', array('moderated', $act));
             $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_moderated_log') .$tovar );
         }
         else

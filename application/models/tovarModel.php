@@ -14,7 +14,7 @@ class TovarModel extends CI_Model{
     public function exists_tovar($id = 0){
         if(!$id) return false;
         $this->db->where('id', $id);
-        $query = $this->db->get('tovars');
+        $query = $this->db->get('products');
         $row = $query->result();
         if($row){
             $this->tovar = $row;
@@ -40,23 +40,23 @@ class TovarModel extends CI_Model{
             }
         }
         
-        $query = $this->db->where(array('tovarid' => $tovar, 'user' => $user))
+        $query = $this->db->where(array('productid' => $tovar, 'user' => $user))
                             ->get('orders');
         if($query->num_rows() > 0 && $basket == 'yes')
             redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
         
         if($basket == 'yes')
-            $this->db->insert('orders', array('user' => $user, 'tovarid' => $tovar, 'basket' => $basket));
+            $this->db->insert('orders', array('user' => $user, 'productid' => $tovar, 'basket' => $basket));
         elseif($basket = 'no')
         {
             if($query->num_rows() > 0)
             {
-                $this->db->where(array('tovarid' => $tovar, 'user' => $user));
+                $this->db->where(array('productid' => $tovar, 'user' => $user));
                 $this->db->update('orders', array('basket' => $basket));
             }
             else
             {
-                $this->db->insert('orders', array('user' => $user, 'tovarid' => $tovar, 'basket' => 'no'));
+                $this->db->insert('orders', array('user' => $user, 'productid' => $tovar, 'basket' => 'no'));
             }
         }
         
@@ -87,7 +87,7 @@ class TovarModel extends CI_Model{
         else
             return FALSE;
         
-        if( $this->db->delete('orders', array('user' => $user, 'tovar' => $tovar)) )
+        if( $this->db->delete('orders', array('user' => $user, 'productid' => $tovar)) )
             return TRUE;
         else
             return FALSE;
@@ -147,7 +147,7 @@ class TovarModel extends CI_Model{
         
         $this->form_validation->set_rules($config);
         if($this->form_validation->run() == FALSE)
-            $this->load->view('tovar/new');
+            $this->load->view('product/new');
         else
         {
             $array = array(
@@ -184,10 +184,10 @@ class TovarModel extends CI_Model{
                 }
             }
             if( $add )
-                $this->db->insert('tovars', $array);
+                $this->db->insert('products', $array);
             else{
                 $this->db->where('id', $id);
-                $this->db->update('tovars', $array);
+                $this->db->update('products', $array);
             }
         }
     }

@@ -13,8 +13,30 @@ class TovarController extends CI_Controller{
     /*
      * Поиск товара
      */
-    public function search($text = ''){
+    public function search($search = ''){
+        $this->load->view( $this->config->item('template_dir') . 'head');
         
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('search', '', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('order', '', 'trim|required');
+        if( $this->form_validation->run() == FALSE )
+            $this->load->view('tovar/search');
+        else
+        {
+            $sort_array = array('added', 'price');
+            $order = $this->input->post('order');
+            $search = $this->input->post('search');
+            if( ! in_array($order, $sort_array) )
+                die;
+            $query = $this->db->like('name', $search)
+                    ->order_by($order, 'DESC')
+                    ->get('tovars');
+            $row = $query->result();
+            foreach($row as $tovar)
+                echo @$tovar->name . "<br>";
+        }
+        
+        $this->load->view( $this->config->item('template_dir') . 'foot');
     }
     
     /*
@@ -28,7 +50,7 @@ class TovarController extends CI_Controller{
         if( $this->tovarModel->add() )
             redirect( $this->config->item('site_url') );
         else
-            redirect( $this->config->item('site_url') . 'tovar/add');
+            redirect( $this->config->item('site_url') . 'product/add');
         
         $this->load->view( $this->config->item('template_dir') . 'foot');
     }
@@ -43,7 +65,7 @@ class TovarController extends CI_Controller{
         $this->load->view( $this->config->item('template_dir') . 'head');
         
         $this->db->where('id', $id);
-        $query = $this->db->get('tovars');
+        $query = $this->db->get('products');
         $row = $query->result();
         if(!$row)
         {
@@ -56,7 +78,7 @@ class TovarController extends CI_Controller{
             if( $this->tovarModel->add(false, $id) )
                 redirect( $this->config->item('site_url') );
             else
-                redirect( $this->config->item('site_url') . 'tovar/edit/' . $id );
+                redirect( $this->config->item('site_url') . 'product/edit/' . $id );
         
         }
         $this->load->view( $this->config->item('template_dir') . 'foot');
@@ -73,9 +95,9 @@ class TovarController extends CI_Controller{
         $row = $this->tovarModel->tovar;
         if( $this->siteModel->user->supplier_id == $row[0]->supplier_id || $this->siteModel->user->type >= UC_SUPPLIER)
         {
-            $this->db->delete('tovars', array('id' => $id));
+            $this->db->delete('products', array('id' => $id));
             $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_delete_log') . $id );
-            redirect($this->config->item('site_url') . 'tovar/');
+            redirect($this->config->item('site_url') . 'product/');
         }
         else
             die;
@@ -88,7 +110,7 @@ class TovarController extends CI_Controller{
         if( $this->siteModel->login == false || $this->siteModel->user->type < UC_MODERATOR || ! $id || $act != 'yes' && $act != 'no' )
             die;
         $this->db->where('id', $id);
-        $this->db->update('tovars', array('top' => $act));
+        $this->db->update('products', array('top' => $act));
         $this->siteModel->log_write( $this->siteModel->user->username . $this->lang->line('tovar_top_log') . $id );
         redirect($this->config->item('site_url') . 'admin/');
     }
@@ -114,7 +136,7 @@ class TovarController extends CI_Controller{
             $str = $cat;
 
         $this->db->where('id', $tovar);
-        $this->db->update('tovars', array('cats' => $str));
+        $this->db->update('products', array('cats' => $str));
     }
     
     /*
@@ -136,7 +158,7 @@ class TovarController extends CI_Controller{
         }else
             $cats = '';
         $this->db->where('id', $tovar);
-        $this->db->update('tovars', array('cats' => $cats));
+        $this->db->update('products', array('cats' => $cats));
         //redirect($this->config->item('site_url'));
     }
     
@@ -150,7 +172,7 @@ class TovarController extends CI_Controller{
         $this->siteModel->redirLogin();
         $this->load->model('reviewModel');
         if($this->reviewModel->add_review(array('type' => 'tovar')))
-            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+            redirect($this->config->item('site_url') . 'product/view/' . $tovar);
         else
             die($this->lang->line('unknown_error'));
         
@@ -182,7 +204,7 @@ class TovarController extends CI_Controller{
                && $this->siteModel->user->type < UC_MODERATOR )
            die;  
         if($this->reviewModel->add_review(array('type' => 'tovar', 'act' => 'edit', 'id' => $id)))
-            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+            redirect($this->config->item('site_url') . 'product/view/' . $tovar);
         else
             die($this->lang->line('unknown_error'));
     }
@@ -220,7 +242,7 @@ class TovarController extends CI_Controller{
             die;
         
         if( $this->tovarModel->del_order($tovar) )
-            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+            redirect($this->config->item('site_url') . 'product/view/' . $tovar);
         else
         {
             $array['text'] = $this->lang->line('error_del_order');
@@ -245,12 +267,12 @@ class TovarController extends CI_Controller{
         $this->load->view( $this->config->item('template_dir') . 'head');
         
         /*Отывы*/
-        $this->db->where('tovar_id', $tovar);
+        $this->db->where('product_id', $tovar);
         $query = $this->db->get('reviews');
         $rowReviews = $query->result();
         
         /*Сделки*/
-        $this->db->where(array('tovarid' => $tovar, 'payment' => 'yes'));
+        $this->db->where(array('productid' => $tovar, 'payment' => 'yes'));
         $query = $this->db->get('orders');
         $ordersNum = $query->num_rows();
         

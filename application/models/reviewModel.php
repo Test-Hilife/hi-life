@@ -49,9 +49,9 @@ class ReviewModel extends CI_Model{
         }
     }
     
-    public function del_review($id = 0, $redir = 'tovar/view/'){
+    public function del_review($id = 0, $redir = 'product/view/'){
         if( $this->db->delete('reviews', array('id' => $id)) )
-            redirect( $this->config->item('site_url') . $redir . $this->info[0]->tovar_id );
+            redirect( $this->config->item('site_url') . $redir . $this->info[0]->product_id );
         else
             redirect( $this->config->item('site_url') );
     }
