@@ -45,8 +45,8 @@ $route['user'] = 'userController';
 $route['user/(:any)'] = 'userController/$1';
 $route['admin'] = 'adminController';
 $route['admin/(:any)'] = 'adminController/$1';
-$route['tovar'] = 'tovarController';
-$route['tovar/(:any)'] = 'tovarController/$1';
+$route['product'] = 'productController';
+$route['product/(:any)'] = 'productController/$1';
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

@@ -1,31 +1,55 @@
 <?php
 
-class TovarModel extends CI_Model{
+class productModel extends CI_Model{
     
-    public $tovar;
+    public $product;
     
     function __construct(){
         parent::__construct();
         $this->load->model('userModel');
         $this->load->library('form_validation');
-        $this->lang->load('modules/tovar', $this->config->item('default_language'));
+        $this->lang->load('modules/product', $this->config->item('default_language'));
     }
     
-    public function exists_tovar($id = 0){
+    public function search($search = '', $order = ''){
+        $sort_array = array('added', 'price');
+        if(!isset($order))
+            if($this->input->post('order'))
+                $order = $this->input->post('order');
+            else
+                $order = "added";
+        if(!isset($search))
+            $search = $this->input->post('search');
+        if( ! in_array($order, $sort_array) )
+            return;
+        $this->db->where('moderated','yes');
+        if(isset($search)){
+            $this->db->like('name', $search)
+            ->or_like('small_text', $search)
+            ->or_like('text', $search);
+        }
+        $this->db->order_by($order, 'DESC');
+        $query = $this->db->get('products');
+        $row = $query->result();
+        foreach($row as $product)
+            echo @$product->name . "<br>";        
+    }
+    
+    public function exists_product($id = 0){
         if(!$id) return false;
         $this->db->where('id', $id);
         $query = $this->db->get('products');
         $row = $query->result();
         if($row){
-            $this->tovar = $row;
+            $this->product = $row;
             return TRUE;
         }else{
-            $this->tovar = 0;
+            $this->product = 0;
             return FALSE;
         }   
     }
     
-    public function new_order($tovar = 0, $basket = 'yes'){
+    public function new_order($product = 0, $basket = 'yes'){
         if($this->siteModel->login)
             $user = $this->siteModel->user->id;
         else
@@ -40,23 +64,23 @@ class TovarModel extends CI_Model{
             }
         }
         
-        $query = $this->db->where(array('productid' => $tovar, 'user' => $user))
+        $query = $this->db->where(array('productid' => $product, 'user' => $user))
                             ->get('orders');
         if($query->num_rows() > 0 && $basket == 'yes')
-            redirect($this->config->item('site_url') . 'tovar/view/' . $tovar);
+            redirect($this->config->item('site_url') . 'product/view/' . $product);
         
         if($basket == 'yes')
-            $this->db->insert('orders', array('user' => $user, 'productid' => $tovar, 'basket' => $basket));
+            $this->db->insert('orders', array('user' => $user, 'productid' => $product, 'basket' => $basket));
         elseif($basket = 'no')
         {
             if($query->num_rows() > 0)
             {
-                $this->db->where(array('productid' => $tovar, 'user' => $user));
+                $this->db->where(array('productid' => $product, 'user' => $user));
                 $this->db->update('orders', array('basket' => $basket));
             }
             else
             {
-                $this->db->insert('orders', array('user' => $user, 'productid' => $tovar, 'basket' => 'no'));
+                $this->db->insert('orders', array('user' => $user, 'productid' => $product, 'basket' => 'no'));
             }
         }
         
@@ -73,13 +97,13 @@ class TovarModel extends CI_Model{
                 'name' => $this->siteModel->user->username,
                 'order_id' => $this->db->insert_id()
             );
-            $this->email->message( $this->load->view('tovar/send_email_new_order', $array_order) );
+            $this->email->message( $this->load->view('product/send_email_new_order', $array_order) );
             $this->email->send();       
         }
-        redirect($this->config->item('site_url') . 'tovar/payment/' . $tovar);
+        redirect($this->config->item('site_url') . 'product/payment/' . $product);
     }
     
-    public function del_order($tovar = 0){
+    public function del_order($product = 0){
         if($this->siteModel->login)
             $user = $this->siteModel->user->id;
         elseif( trim($this->session->userdata('user')) )
@@ -87,7 +111,7 @@ class TovarModel extends CI_Model{
         else
             return FALSE;
         
-        if( $this->db->delete('orders', array('user' => $user, 'productid' => $tovar)) )
+        if( $this->db->delete('orders', array('user' => $user, 'productid' => $product)) )
             return TRUE;
         else
             return FALSE;
@@ -166,7 +190,7 @@ class TovarModel extends CI_Model{
                 $array['moderated'] = 'no';
             
             $config_image = array(
-                'upload_path' => './uploads/images/tovar/',
+                'upload_path' => './uploads/images/product/',
                 'allowed_types' => 'gif|jpg|png',
                 'max_size' => 2 * 1024,
                 'overwrite' => false,
