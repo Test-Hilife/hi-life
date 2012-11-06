@@ -5,7 +5,7 @@ class UserController extends CI_Controller {
         parent::__construct();
         $this->load->library('form_validation');
         $this->load->model('userModel');
-        $this->lang->load('user', $this->config->item('default_language'));
+        $this->lang->load('modules/user', $this->config->item('default_language'));
     }
     
     public function index()
@@ -106,7 +106,7 @@ class UserController extends CI_Controller {
             );
             $this->load->view($this->config->item('template_dir') . 'head', $data);
         }
-        if($this->userModel->login)
+        if($this->siteModel->login)
         {
             $array["text"] = $this->lang->line('auth');
             $this->load->view($this->config->item('template_dir') . 'div_error', $array);
@@ -114,30 +114,29 @@ class UserController extends CI_Controller {
         }
         else
         {
-            $this->form_validation->set_rules('email', 'Email', 'trim|required|email_valid');
-            $this->form_validation->set_rules('password', '', 'trim|required');
-            
-            if($this->form_validation->run() == FALSE)
-                $this->load->view('user/auth');
-            else
+            if( $str == FALSE )
             {
                 $array = array(
-                    'email' => $this->input->post('email'),
-                    'password' => md5_hash( $this->input->post('password') )
+                   'email' => $this->input->post('email'),
+                   'password' => md5_hash( $this->input->post('password') )
                 );
+                $this->userModel->auth($array);               
+            }
+            else
+            {
+                $this->form_validation->set_rules('email', 'Email', 'trim|required|email_valid');
+                $this->form_validation->set_rules('password', '', 'trim|required');
 
-                if( $this->userModel->auth($array) ){
-                    $array = array('text' => $this->lang->line('success_auth'));
-                    $this->load->view($this->config->item('template_dir') . 'success', $array);
-                }
+                if($this->form_validation->run() == FALSE)
+                    $this->load->view('user/auth');
                 else
                 {
                     $array = array(
-                        'text' => $this->lang->line('error_auth')
+                        'email' => $this->input->post('email'),
+                        'password' => md5_hash( $this->input->post('password') )
                     );
-                    $this->load->view('user/auth', $array);
+                    $this->userModel->auth($array);
                 }
-                
             }
         }
         if($str)

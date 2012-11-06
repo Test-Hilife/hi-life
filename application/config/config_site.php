@@ -7,7 +7,7 @@ $config['site_name'] = 'HiLife';
 $config['site_email'] = 'info@info.com';
 
 //Разделитель между названием сайта и названием страницы
-$config['site_defis'] = '-';
+$config['site_defis'] = ' - ';
 
 $config['site_url'] = 'http://localhost/';
 
@@ -22,5 +22,6 @@ $config['admin_username'] = 'admin';
 $config['admin_password'] = 'pass';
 
 $config['default_language'] = 'russian';
+$config['default_theme'] = 'hilife';
 
 ?>

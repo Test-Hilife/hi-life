@@ -15,10 +15,17 @@ class UserModel extends CI_Model{
         if($num > 0)
         {
             $this->session->set_userdata(array('email' => $opts['email'], 'pass' => $opts['password']));
+            $array = array('text' => $this->lang->line('success_auth'));
+            $this->load->view($this->config->item('template_dir') . 'success', $array);
             return TRUE;
         }
         else
+        {    
+            $array = array('text' => $this->lang->line('error_auth'));
+            $this->load->view('user/auth', $array);           
             return FALSE;
+        }
+        
     }
     
     public function logout(){

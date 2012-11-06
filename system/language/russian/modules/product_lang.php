@@ -7,4 +7,5 @@ $lang['unknown_error'] = 'Неизвестная ошибка';
 $lang['error_del_order'] = 'К сожалению произошла ошибка';
 
 $lang['new_order'] = 'Оформление заказа на сайте ';
+$lang['product_not_exists'] = 'Данного товара не существуе';
 ?>

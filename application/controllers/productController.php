@@ -11,6 +11,34 @@ class productController extends CI_Controller{
     }
     
     /*
+     * Просмотр товара
+     */
+    public function view($id = 0){
+        if( !(int) $id)
+            die;
+        $this->db->where("id", $id);
+        $query = $this->db->get("products");
+        $row = $query->result();
+        $pageInfo = array(
+            'title' => $row[0]->name,
+            'keywords' => '',
+            'descr' => $row[0]->small_text
+        );
+        $this->load->view( $this->config->item('template_dir') . 'head' );
+        if( !$query->num_rows() )
+        {
+            $array["text"] = $this->lang->line("product_not_exists");
+            $this->load->view($this->config->item('template_dir') . 'div_error', $array );
+        }
+        else
+        {
+            $this->load->view( 'product/view', $row[0] );
+        }
+        
+        $this->load->view( $this->config->item('template_dir') . 'foot' );
+    }
+    
+    /*
      * Поиск товаров по категориям
      */
     public function searchInCat($catId = 0){
@@ -30,7 +58,11 @@ class productController extends CI_Controller{
      */
     public function search($search = '', $order = ''){
         $this->load->view( $this->config->item('template_dir') . 'head');
-        
+        //В случае поиска через хеадер сайта
+        if(!isset($search))
+        {
+            $search = $this->input->post("search");
+        }
         if(isset($search) || isset($order))
             $this->productModel->search($search, $order);
         else

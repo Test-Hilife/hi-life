@@ -4,14 +4,17 @@ class Home extends CI_Controller {
 
     public function index()
     {
-        $this->load->model("head");
-           
-        //Шапка
-        $this->load->view($this->config->item('template_dir') . 'head', $this->head->array);
-        //Основа
+        $pageInfo = array(
+            'title' => $this->lang->line('home_page')
+        );
+        $this->siteModel->setPageInfo($pageInfo);
+        
+
+        $this->load->view($this->config->item('template_dir') . 'head');
+
         $this->load->view('index');
-        //Футер
-        $this->load->view($this->config->item('template_dir') . 'foot', $this->head->array);
+
+        $this->load->view($this->config->item('template_dir') . 'foot');
 
     }
 }

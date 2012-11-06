@@ -2,11 +2,15 @@
 
 class SiteModel extends CI_Model{
     
+    public $pageInfo = array();
     public $login = false;
     public $user;
     
     function __construct(){
         parent::__construct();
+        $this->pageInfo['descr'] = $this->lang->line('default_descr_page');
+        $this->pageInfo['keywords'] = $this->lang->line('default_keywords_page');
+        $this->pageInfo['title'] = $this->lang->line('default_title');
         if( $this->session->userdata('pass') )
         {
             $this->db->where( array('email' => $this->session->userdata('email'), 'pass' => $this->session->userdata('pass')) )
@@ -18,6 +22,27 @@ class SiteModel extends CI_Model{
                 $this->user = $row[0];
                 $this->login = true;
             }
+        }
+    }
+    
+    public function setPageInfo($info){
+        if(isset($info))
+        {
+            foreach($info AS $key => $value)
+                switch($key){
+                    case 'title':
+                        $this->pageInfo['title'] .= $this->config->item('site_defis') . $value;
+                    break;
+                    case 'keywords':
+                        $this->pageInfo['keywords'] .= ', ' . $value;
+                    break;
+                    case 'descr':
+                        $this->pageInfo['descr'] .= $value;
+                    break;
+                    default:
+                        $this->pageInfo[$key] = $value;
+                    break;
+                }
         }
     }
     
