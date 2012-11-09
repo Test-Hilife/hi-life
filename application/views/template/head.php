@@ -14,32 +14,36 @@
     <div class="body">
         
         <div class="head">
-            <div class="logo">
-                <a href="">
-                    <img src="theme/<?=$this->config->item("default_theme");?>/images/plus.gif" border="0">
-                </a>
-            </div>
+            <div class="logo">&nbsp;</div>
             <div class="user_bar">
                 <?php if($this->siteModel->login == FALSE): ?>
                     <form name="auth" method="post" action="user/auth/false">
-                        <input pattern="2-[0-9]{3}-[0-9]{3}" type="text" size="30" name="email" required placeholder="Email" /><br />
-                        <input type="text" size="30" name="password" required placeholder="Password" /><br />
+                        <input type="text" size="30" name="email" required placeholder="Email" />
+                        <input type="text" size="30" name="password" required placeholder="Password" />
+                        <input type="submit" value="<?=$this->lang->line("auth");?>" />
+                        <br />
                         <center>
-                            <input type="submit" value="<?=$this->lang->line("auth_button");?>" />
-                            <a class="button" href="user/signup"><?=$this->lang->line("signup_button");?></a>
+                            <a class="url" href="/user/recover_pass"><?=$this->lang->line("recover_pass");?></a>
+                            <a class="url" href="/user/signup"><?=$this->lang->line("signup");?></a>
                         </center>
                     </form>
                 <?php else: ?>
                     <b><?=$this->lang->line("hello_user");?>, </b><?=$this->siteModel->user->username;?><br /><br/>
-                    <a class="button" href="user/logout"><?=$this->lang->line("logout_button");?></a>
+                    <a class="button" href="/user/logout"><?=$this->lang->line("logout");?></a>
                 <?php endif; ?>
             </div>
         </div>
 
         <div class="search">
-            <form name="search" method="post" action="product/search">
-                <input type="text" size="50" name="search" />
-                <input type="submit" value="<?=$this->lang->line("search_button");?>" />
+            <form name="search" method="post" action="/product/search">
+                <input class="search" type="text" size="50" name="search" />
+                <input type="submit" value="<?=$this->lang->line("search");?>" />
             </form>
         </div>
         
+        <div class="navigation">
+            <a href=""><?=$this->lang->line('home');?></a>
+            <a href="product"><?=$this->lang->line('products');?></a>
+        </div>
+        
+        <div class="page">

@@ -11,6 +11,35 @@ class productController extends CI_Controller{
     }
     
     /*
+     * Товары
+     */
+    public function all(){
+        $this->db->where("moderated", "yes")
+                ->order_by("id", "DESC");
+        $query = $this->db->get("products");
+        $row = $query->result();
+        
+        $pageInfo = array(
+            "title" => $this->lang->line("products_title")
+        );
+        $this->siteModel->setPageInfo($pageInfo);
+        
+        $this->load->view( $this->config->item("template_dir") . "head");
+        
+        if( !$query->num_rows() )
+        {
+            $error = $this->lang->line("products_not_exists");
+            $this->load->view( $this->config->item("template_dir") . "div_error", $error);
+        }
+        else
+        {
+            $array["row"] = $row;
+            $this->load->view( "product/all" , $array );
+        }
+        $this->load->view( $this->config->item("template_dir") . "foot");
+    }
+    
+    /*
      * Просмотр товара
      */
     public function view($id = 0){

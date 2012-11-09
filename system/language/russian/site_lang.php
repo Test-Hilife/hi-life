@@ -1,5 +1,6 @@
 <?php
 
+$lang['view'] = 'Смотреть';
 $lang['not_id'] = 'Неверный ID';
 $lang['error_send_email'] = 'Не удалось отправить сообщение на Email';
 $lang['signup_new_user'] = 'Зарегистрирован новый пользователь';
@@ -18,15 +19,20 @@ $lang['default_title'] = "HiLife";
 
 $lang['home_page'] = 'Главная';
 
-$lang['search_button'] = 'Искать';
-$lang['auth_button'] = 'Вход';
-$lang['logout_button'] = 'Выход';
-$lang['signup_button'] = 'Регистрация';
+$lang['search'] = 'Искать';
+$lang['auth'] = 'Вход';
+$lang['logout'] = 'Выход';
+$lang['signup'] = 'Регистрация';
+$lang['recover_pass'] = 'Восстановить пароль';
 
 $lang['hello_user'] = 'Здравствуйте';
 
+$lang['home'] = 'Главная';
+$lang['products'] = 'Товары';
 
 
+//Titles
+$lang['products_title'] = 'Товары';
 
 
 ?>
